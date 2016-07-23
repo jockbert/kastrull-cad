@@ -1,6 +1,6 @@
 
 /bin/
-.cache
+.cache*
 .classpath
 .project
 .settings/
