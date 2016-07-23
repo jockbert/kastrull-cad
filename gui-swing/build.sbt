@@ -1,5 +1,5 @@
 
-name := "gui-swing"
+name := "kastrull-gui-swing"
 
 version := "0.1"
 
