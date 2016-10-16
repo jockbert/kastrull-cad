@@ -6,12 +6,15 @@ import java.awt.event.MouseMotionListener
 import java.awt.event.MouseEvent
 
 import GuiEvent.Point
+import java.awt.event.MouseWheelListener
+import java.awt.event.MouseWheelEvent
 
 object GuiEvent {
   type Point = (Int, Int)
 
   import scala.language.implicitConversions
-  implicit def toPoint(p: java.awt.Point): Point = (p.x, p.y)
+
+  implicit def toGuiPoint(p: java.awt.Point): Point = (p.x, p.y)
 
   def listenTo(panel: JPanel)(pipe: GuiEvent => Unit): JPanel = {
     panel.addMouseListener(new MouseListener() {
@@ -27,6 +30,10 @@ object GuiEvent {
       def mouseMoved(me: MouseEvent): Unit = ()
     })
 
+    panel.addMouseWheelListener(new MouseWheelListener() {
+      def mouseWheelMoved(me: MouseWheelEvent): Unit = pipe(Scroll(me.getPoint))
+    })
+
     panel
   }
 }
@@ -40,3 +47,5 @@ case class Dragged(point: Point) extends GuiEvent
 case class Pressed(point: Point, button: Int) extends GuiEvent
 
 case class Released(point: Point, button: Int) extends GuiEvent
+
+case class Scroll(point: Point) extends GuiEvent

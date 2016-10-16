@@ -26,5 +26,5 @@ object SwingAdaptations {
   }
 
   import scala.language.implicitConversions
-  implicit def toP(p: (Int, Int)): Point = Point(p._1, p._2)
+  implicit def toCorePoint(p: (Int, Int)): Point = Point(p._1, p._2)
 }
