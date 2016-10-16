@@ -14,6 +14,11 @@ import com.kastrull.core.Line
 import com.kastrull.core.{ Point => P }
 import com.kastrull.core.Sketch
 import com.kastrull.gui.GuiEvent
+import com.kastrull.gui.Pressed
+import com.kastrull.gui.Released
+import com.kastrull.gui.swing.SwingAdaptations.NiceFrame
+import com.kastrull.gui.swing.SwingAdaptations.NicePanel
+import com.kastrull.gui.swing.SwingAdaptations.toP
 
 import javax.swing.JFrame
 import javax.swing.JLabel
@@ -21,25 +26,7 @@ import javax.swing.JPanel
 
 object Main extends App {
 
-  implicit class NiceFrame(jf: JFrame) {
-    def and(fn: JFrame => Unit): JFrame = {
-      fn(jf)
-      jf
-    }
-  }
-  implicit class NicePanel(jp: JPanel) {
-    def and(fn: JPanel => Unit): JPanel = {
-      fn(jp)
-      jp
-    }
-
-    def listenTo(fn: GuiEvent => Unit) = {
-      GuiEvent.listenTo(jp)(fn)
-      jp
-    }
-  }
-
-  val sketch: Sketch = Sketch().addLine(Line(P(50, 10), P(100, 200)))
+  val sketch: Sketch = Sketch()
 
   val frame = new JFrame("Kastrull") and
     (_.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)) and
@@ -54,7 +41,7 @@ object Main extends App {
 
   def buttonPanel = new JLabel("Buttons");
 
-  def centerView = new JPanel() {
+  def centerView: JPanel = new JPanel() {
 
     override def paintComponent(g: Graphics) {
       to2D(g).setPaint(gradientPaint)
@@ -65,8 +52,9 @@ object Main extends App {
         RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON);
 
-      println(sketch.lines)
-      sketch.lines.foreach { l => g.drawLine(l.a.x, l.a.y, l.b.x, l.b.y) }
+      sketch.lines.foreach {
+        l => g.drawLine(l.a.x, l.a.y, l.b.x, l.b.y)
+      }
     }
 
     def gradientPaint = {
@@ -82,7 +70,20 @@ object Main extends App {
 
   } and (_.addMouseWheelListener(new MouseWheelListener() {
     def mouseWheelMoved(me: MouseWheelEvent): Unit = println(" wheel\t" + me.getPoint + " " + me.getButton())
-  })) listenTo {
-    case x => println(x)
+  })) listenTo
+    addLineConsumer(sketch) listenTo
+    (ge => frame.repaint())
+
+  def addLineConsumer(sketch: Sketch): GuiEvent => Unit = {
+    var start: Option[P] = None
+    ge => (ge, start) match {
+      case (Released(p, btn), Some(s)) =>
+        sketch.addLine(Line(s, p))
+        start = None
+
+      case (Pressed(p, btn), _) => start = Some(p)
+
+      case _                    => ()
+    }
   }
 }
