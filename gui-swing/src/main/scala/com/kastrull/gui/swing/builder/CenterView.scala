@@ -8,6 +8,7 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import com.kastrull.core.Sketch
 import java.awt.Dimension
+import com.kastrull.core.Point
 
 object CenterView {
 
@@ -35,8 +36,17 @@ object CenterView {
       to2D(g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
       sketch.lines.foreach {
-        l => g.drawLine(l.a.x, l.a.y, l.b.x, l.b.y)
+        l =>
+          g.drawLine(l.a.x, l.a.y, l.b.x, l.b.y)
+          drawDot(g, l.a)
+          drawDot(g, l.b)
       }
+    }
+
+    def drawDot(g: Graphics, a: Point) = {
+      val r = 2
+      val r2 = r * 2
+      g.fillOval(a.x - r, a.y - r, r2, r2)
     }
 
     def to2D(g: Graphics) = g match {
